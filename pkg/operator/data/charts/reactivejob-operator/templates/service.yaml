@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "reactivejob-operator.fullname" . }}
+  labels:
+    {{- include "reactivejob-operator.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 443
+      protocol: TCP
+      targetPort: webhooks
+      name: https
+  selector:
+    {{- include "reactivejob-operator.selectorLabels" . | nindent 4 }}

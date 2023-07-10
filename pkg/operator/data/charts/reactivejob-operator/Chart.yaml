@@ -1,0 +1,6 @@
+apiVersion: v2
+name: reactivejob-operator
+description: A Helm chart for https://github.com/sap/reactivejob-operator
+type: application
+version: 0.1.0
+appVersion: v0.1.0

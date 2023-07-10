@@ -1,0 +1,13 @@
+{{- if ge (int .Values.replicaCount) 2 }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "reactivejob-operator.fullname" . }}
+  labels:
+    {{- include "reactivejob-operator.labels" . | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      {{- include "reactivejob-operator.selectorLabels" . | nindent 6 }}
+{{- end }}
