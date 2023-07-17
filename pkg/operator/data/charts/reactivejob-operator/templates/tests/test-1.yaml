@@ -1,0 +1,52 @@
+{{- $reactiveJobName := printf "%s-test-1-%s" (include "reactivejob-operator.fullname" .) (randAlphaNum 10 | lower) }}
+---
+apiVersion: batch.cs.sap.com/v1alpha1
+kind: ReactiveJob
+metadata:
+  name: {{ $reactiveJobName }}
+  labels:
+    {{- include "reactivejob-operator.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 120
+      template:
+        spec:
+          containers:
+          - name: main
+            image: alpine
+            command: ["sleep","1"]
+          restartPolicy: Never
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "reactivejob-operator.fullname" . }}-test-1
+  labels:
+    {{- include "reactivejob-operator.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: test
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  containers:
+  - name: kubectl
+    image: bitnami/kubectl:{{ .Capabilities.KubeVersion.Version | trimPrefix "v" }}
+    command:
+    - bash
+    - -ec
+    - |
+        kubectl wait reactivejobs.batch.cs.sap.com/{{ $reactiveJobName }} --for condition=Ready --timeout 30s
+        jobName=$(kubectl get jobs.batch -l batch.cs.sap.com/controller-name={{ $reactiveJobName }} -o json | jq -r '.items[].metadata.name')
+        if [ -z "$jobName" ]; then
+          >&1 echo "No matching job found"
+          exit 1
+        fi
+        kubectl wait jobs.batch/$jobName --for condition=Complete --timeout 5s
+  serviceAccountName: {{ include "reactivejob-operator.fullname" . }}-test
+  terminationGracePeriodSeconds: 3
+  restartPolicy: Never
