@@ -1,6 +1,6 @@
 module github.com/sap/reactivejob-operator-cop
 
-go 1.23.4
+go 1.23.5
 
 require (
 	github.com/pkg/errors v0.9.1
