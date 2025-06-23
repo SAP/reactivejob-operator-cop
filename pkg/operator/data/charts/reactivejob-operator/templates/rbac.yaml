@@ -118,3 +118,20 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: {{ include "reactivejob-operator.fullname" . }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "reactivejob-operator.fullname" . }}-view
+  labels:
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+    {{- include "reactivejob-operator.labels" . | nindent 4 }}
+rules:
+- apiGroups:
+  - batch.cs.sap.com
+  resources:
+  - reactivejobs
+  verbs:
+  - list
+  - get
+  - watch
